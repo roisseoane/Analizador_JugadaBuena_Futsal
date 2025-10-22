@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador Ponderado de Jugadas</title>
+    
+    <style>
+        :root {
+            --color-primario: #005a9c;
+            --color-exito: #28a745;
+            --color-error: #dc3545;
+            --color-neutro: #6c757d;
+            --color-fondo: #f0f2f5;
+            --color-texto: #333;
+            --color-tarjeta: #ffffff;
+            --sombra: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--color-fondo);
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            background: var(--color-tarjeta);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--sombra);
+        }
+
+        /* --- Estilos del Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 999;
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--color-tarjeta);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--sombra);
+            z-index: 1000;
+            display: none;
+            width: 90%;
+            max-width: 700px;
+            text-align: left;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: var(--color-primario);
+            border-bottom: 2px solid var(--color-fondo);
+            padding-bottom: 10px;
+        }
+        
+        .modal-content p.instruccion {
+            font-size: 0.9rem;
+            color: var(--color-neutro);
+            margin-top: 5px;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 2rem;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close-btn:hover { color: #333; }
+
+        /* --- Estilos del Formulario --- */
+        #criteriaForm fieldset {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        #criteriaForm legend {
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 0 0.5rem;
+            color: var(--color-texto);
+        }
+
+        #criteriaForm div {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        #criteriaForm input[type="checkbox"] {
+            margin-top: 5px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            width: 1.3em;
+            height: 1.3em;
+        }
+        
+        #criteriaForm label {
+            font-size: 1rem;
+            color: #444;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+        
+        #criteriaForm label b {
+            color: var(--color-texto);
+        }
+        
+        /* Colores para Puntos */
+        .puntos {
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-left: 8px;
+        }
+        .puntos-pos { color: var(--color-exito); }
+        .puntos-neg { color: var(--color-error); }
+
+        /* --- Botones --- */
+        .btn {
+            background-color: var(--color-primario);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+        .btn:hover { opacity: 0.85; }
+
+        #evaluateBtn {
+            background-color: var(--color-exito);
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* --- Resultado --- */
+        #resultado_wrapper {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 5px;
+            display: none; /* Oculto hasta la evaluación */
+            text-align: center;
+        }
+        
+        #resultado_final {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        #resultado_score, #resultado_explicacion {
+            font-size: 1rem;
+            font-style: italic;
+            color: var(--color-neutro);
+        }
+
+        .resultado-si {
+            background-color: #e9f7ec;
+            border: 1px solid var(--color-exito);
+        }
+        .resultado-si #resultado_final { color: var(--color-exito); }
+        
+        .resultado-no {
+            background-color: #fdeeee;
+            border: 1px solid var(--color-error);
+        }
+        .resultado-no #resultado_final { color: var(--color-error); }
+        
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Analizador Ponderado ⚽</h1>
+        <p>Evalúa una jugada con el "Test de Puntuación Heurístico".</p>
+        <button id="openModalBtn" class="btn">Analizar Jugada</button>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay"></div>
+
+    <div id="analysisModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModalBtn" class="close-btn">&times;</span>
+            <h3>Evaluación de Jugada</h3>
+            <p class="instruccion">Marca todas las casillas que apliquen a la jugada. El sistema calculará una puntuación y determinará el resultado.</p>
+            
+            <form id="criteriaForm">
+                
+                <fieldset>
+                    <legend>Sección 1: Impacto Positivo (El "Qué")</legend>
+                    <p class="instruccion" style="color: var(--color-primario); font-weight: bold;">
+                        (Puerta de Control: Se debe marcar AL MENOS UNO de estos para que la jugada sea evaluada).
+                    </p>
+                    <div>
+                        <input type="checkbox" id="q1" data-score="12">
+                        <label for="q1">
+                            ¿Se marcó Gol?<span class="puntos puntos-pos">[+12]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q2" data-score="8">
+                        <label for="q2">
+                            ¿Se creó una Ocasión Manifiesta de Gol (OMG) O se forzó una gran parada?<span class="puntos puntos-pos">[+8]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q3" data-score="8">
+                        <label for="q3">
+                            ¿Se evitó una OMG rival (Acción Defensiva Crítica)?<span class="puntos puntos-pos">[+8]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q4" data-score="6">
+                        <label for="q4">
+                            ¿Se logró salir de una presión en zona de riesgo (campo propio) con éxito?<span class="puntos puntos-pos">[+6]</span>
+                        </label>
+                    </div>
+                </fieldset>
+                
+                <fieldset>
+                    <legend>Sección 2: Ejecución (El "Cómo")</legend>
+                    <div>
+                        <input type="checkbox" id="q5" data-score="3">
+                        <label for="q5">
+                            ¿La jugada implicó superar a 1+ rivales (regate, pared, caño)?<span class="puntos puntos-pos">[+3]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q6" data-score="4">
+                        <label for="q6">
+                            ¿Fue una jugada colectiva destacable (3+ pases constructivos)?<span class="puntos puntos-pos">[+4]</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Sección 3: Coste / Detractores (El "Pero...")</legend>
+                    <div>
+                        <input type="checkbox" id="q7" data-score="-7">
+                        <label for="q7">
+                            ¿Terminó en una pérdida no forzada (mal control, mal pase, tiro desastroso)?<span class="puntos puntos-neg">[-7]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q8" data-score="-7">
+                        <label for="q8">
+                            ¿Se asumió un riesgo táctico innecesario (p.ej., regatear siendo último hombre)?<span class="puntos puntos-neg">[-7]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q9" data-score="-5">
+                        <label for="q9">
+                            ¿La jugada fue individualista, ignorando a un compañero claramente mejor posicionado?<span class="puntos puntos-neg">[-5]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q10" data-score="-8">
+                        <label for="q10">
+                            ¿La acción resultó directamente en una falta peligrosa en contra, penalti o tarjeta?<span class="puntos puntos-neg">[-8]</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <button type="button" id="evaluateBtn" class="btn">Evaluar Puntuación</button>
+            </form>
+
+            <div id="resultado_wrapper">
+                <div id="resultado_final"></div>
+                <div id="resultado_score"></div>
+                <div id="resultado_explicacion"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Constantes y Elementos del DOM ---
+        const UMBRAL_BUENA_JUGADA = 6; // Umbral de puntos
+        
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const analysisModal = document.getElementById('analysisModal');
+        const evaluateBtn = document.getElementById('evaluateBtn');
+        const criteriaForm = document.getElementById('criteriaForm');
+        const resultadoWrapper = document.getElementById('resultado_wrapper');
+        const resultadoFinalDiv = document.getElementById('resultado_final');
+        const resultadoScoreDiv = document.getElementById('resultado_score');
+        const resultadoExplicacionDiv = document.getElementById('resultado_explicacion');
+
+        // IDs de las casillas de "Impacto" (Puerta de Control)
+        const gateCheckboxes = ['q1', 'q2', 'q3', 'q4'];
+        
+        // IDs de TODAS las casillas
+        const allCheckboxes = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10'];
+
+        // --- 2. Función para abrir el modal ---
+        function openModal() {
+            criteriaForm.reset(); 
+            resultadoWrapper.style.display = 'none';
+            resultadoWrapper.className = '';
+            
+            modalOverlay.style.display = 'block';
+            analysisModal.style.display = 'block';
+        }
+
+        // --- 3. Función para cerrar el modal ---
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+            analysisModal.style.display = 'none';
+        }
+
+        // --- 4. Función de Evaluación (Lógica Ponderada) ---
+        function evaluatePlay() {
+            let totalScore = 0;
+            let esCandidata = false;
+
+            // --- Fase 1: Comprobar la Puerta de Control (Impacto) ---
+            for (const id of gateCheckboxes) {
+                if (document.getElementById(id).checked) {
+                    esCandidata = true;
+                    break; // Basta con que una esté marcada
+                }
+            }
+
+            if (!esCandidata) {
+                // Si no es candidata, el resultado es automático
+                showResult(0, "NO (Jugada Neutra)", "No se marcó ningún 'Impacto Positivo' (Sección 1). La jugada es irrelevante.");
+                return;
+            }
+
+            // --- Fase 2: Calcular Puntuación Total ---
+            for (const id of allCheckboxes) {
+                const checkbox = document.getElementById(id);
+                if (checkbox.checked) {
+                    // 'dataset.score' obtiene el atributo 'data-score' del HTML
+                    totalScore += parseInt(checkbox.dataset.score, 10);
+                }
+            }
+
+            // --- Fase 3: Aplicar Umbral y Mostrar Resultado ---
+            if (totalScore >= UMBRAL_BUENA_JUGADA) {
+                showResult(totalScore, "SÍ (Buena Jugada)", `La puntuación supera el umbral de ${UMBRAL_BUENA_JUGADA}. Los aspectos positivos superan a los negativos.`);
+            } else {
+                showResult(totalScore, "NO (Acción Anulada)", `La puntuación no alcanza el umbral de ${UMBRAL_BUENA_JUGADA}. Los costes o errores anulan el impacto positivo.`);
+            }
+        }
+        
+        // --- 5. Función Auxiliar para Mostrar Resultado ---
+        function showResult(score, resultado, explicacion) {
+            resultadoFinalDiv.innerHTML = resultado;
+            resultadoScoreDiv.innerHTML = `Puntuación Final: ${score}`;
+            resultadoExplicacionDiv.innerHTML = explicacion;
+
+            // Asignar clase CSS para color
+            if (resultado.startsWith("SÍ")) {
+                resultadoWrapper.className = 'resultado-si';
+            } else {
+                resultadoWrapper.className = 'resultado-no';
+            }
+            
+            // Mostrar el contenedor del resultado
+            resultadoWrapper.style.display = 'block';
+        }
+
+        // --- 6. Asignar Eventos ---
+        openModalBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', closeModal);
+        evaluateBtn.addEventListener('click', evaluatePlay);
+        
+    </script>
+
+</body>
+</html>
