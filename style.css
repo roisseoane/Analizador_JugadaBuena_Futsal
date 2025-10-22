@@ -1,0 +1,186 @@
+:root {
+    --color-primario: #005a9c;
+    --color-exito: #28a745;
+    --color-error: #dc3545;
+    --color-neutro: #6c757d;
+    --color-fondo: #f0f2f5;
+    --color-texto: #333;
+    --color-tarjeta: #ffffff;
+    --sombra: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--color-fondo);
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    margin: 0;
+    text-align: center;
+}
+
+.container {
+    background: var(--color-tarjeta);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--sombra);
+}
+
+/* --- Estilos del Modal --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    z-index: 999;
+}
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--color-tarjeta);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--sombra);
+    z-index: 1000;
+    display: none;
+    width: 90%;
+    max-width: 700px;
+    text-align: left;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--color-primario);
+    border-bottom: 2px solid var(--color-fondo);
+    padding-bottom: 10px;
+}
+
+.modal-content p.instruccion {
+    font-size: 0.9rem;
+    color: var(--color-neutro);
+    margin-top: 5px;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 2rem;
+    color: #aaa;
+    cursor: pointer;
+    line-height: 1;
+}
+.close-btn:hover { color: #333; }
+
+/* --- Estilos del Formulario --- */
+#criteriaForm fieldset {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+#criteriaForm legend {
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 0 0.5rem;
+    color: var(--color-texto);
+}
+
+#criteriaForm div {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+#criteriaForm input[type="checkbox"] {
+    margin-top: 5px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    width: 1.3em;
+    height: 1.3em;
+}
+
+#criteriaForm label {
+    font-size: 1rem;
+    color: #444;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+#criteriaForm label b {
+    color: var(--color-texto);
+}
+
+/* Colores para Puntos */
+.puntos {
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-left: 8px;
+}
+.puntos-pos { color: var(--color-exito); }
+.puntos-neg { color: var(--color-error); }
+
+/* --- Botones --- */
+.btn {
+    background-color: var(--color-primario);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+.btn:hover { opacity: 0.85; }
+
+#evaluateBtn {
+    background-color: var(--color-exito);
+    width: 100%;
+    margin-top: 1rem;
+}
+
+/* --- Resultado --- */
+#resultado_wrapper {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 5px;
+    display: none; /* Oculto hasta la evaluación */
+    text-align: center;
+}
+
+#resultado_final {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#resultado_score, #resultado_explicacion {
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--color-neutro);
+}
+
+.resultado-si {
+    background-color: #e9f7ec;
+    border: 1px solid var(--color-exito);
+}
+.resultado-si #resultado_final { color: var(--color-exito); }
+
+.resultado-no {
+    background-color: #fdeeee;
+    border: 1px solid var(--color-error);
+}
+.resultado-no #resultado_final { color: var(--color-error); }
