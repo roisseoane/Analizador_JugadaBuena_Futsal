@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador Ponderado de Jugadas</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Analizador Ponderado ⚽</h1>
+        <p>Evalúa una jugada con el "Test de Puntuación Heurístico".</p>
+        <button id="openModalBtn" class="btn">Analizar Jugada</button>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay"></div>
+
+    <div id="analysisModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModalBtn" class="close-btn">&times;</span>
+            <h3>Evaluación de Jugada</h3>
+            <p class="instruccion">Marca todas las casillas que apliquen a la jugada. El sistema calculará una puntuación y determinará el resultado.</p>
+            
+            <form id="criteriaForm">
+                
+                <fieldset>
+                    <legend>Sección 1: Impacto Positivo (El "Qué")</legend>
+                    <p class="instruccion" style="color: var(--color-primario); font-weight: bold;">
+                        (Puerta de Control: Se debe marcar AL MENOS UNO de estos para que la jugada sea evaluada).
+                    </p>
+                    <div>
+                        <input type="checkbox" id="q1" data-score="12">
+                        <label for="q1">
+                            ¿Se marcó Gol?<span class="puntos puntos-pos">[+12]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q2" data-score="8">
+                        <label for="q2">
+                            ¿Se creó una Ocasión Manifiesta de Gol (OMG) O se forzó una gran parada?<span class="puntos puntos-pos">[+8]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q3" data-score="8">
+                        <label for="q3">
+                            ¿Se evitó una OMG rival (Acción Defensiva Crítica)?<span class="puntos puntos-pos">[+8]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q4" data-score="6">
+                        <label for="q4">
+                            ¿Se logró salir de una presión en zona de riesgo (campo propio) con éxito?<span class="puntos puntos-pos">[+6]</span>
+                        </label>
+                    </div>
+                </fieldset>
+                
+                <fieldset>
+                    <legend>Sección 2: Ejecución (El "Cómo")</legend>
+                    <div>
+                        <input type="checkbox" id="q5" data-score="3">
+                        <label for="q5">
+                            ¿La jugada implicó superar a 1+ rivales (regate, pared, caño)?<span class="puntos puntos-pos">[+3]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q6" data-score="4">
+                        <label for="q6">
+                            ¿Fue una jugada colectiva destacable (3+ pases constructivos)?<span class="puntos puntos-pos">[+4]</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Sección 3: Coste / Detractores (El "Pero...")</legend>
+                    <div>
+                        <input type="checkbox" id="q7" data-score="-7">
+                        <label for="q7">
+                            ¿Terminó en una pérdida no forzada (mal control, mal pase, tiro desastroso)?<span class="puntos puntos-neg">[-7]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q8" data-score="-7">
+                        <label for="q8">
+                            ¿Se asumió un riesgo táctico innecesario (p.ej., regatear siendo último hombre)?<span class="puntos puntos-neg">[-7]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q9" data-score="-5">
+                        <label for="q9">
+                            ¿La jugada fue individualista, ignorando a un compañero claramente mejor posicionado?<span class="puntos puntos-neg">[-5]</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="q10" data-score="-8">
+                        <label for="q10">
+                            ¿La acción resultó directamente en una falta peligrosa en contra, penalti o tarjeta?<span class="puntos puntos-neg">[-8]</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <button type="button" id="evaluateBtn" class="btn">Evaluar Puntuación</button>
+            </form>
+
+            <div id="resultado_wrapper">
+                <div id="resultado_final"></div>
+                <div id="resultado_score"></div>
+                <div id="resultado_explicacion"></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
